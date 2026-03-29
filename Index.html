@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kauan Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --accent: #3897f0;
+            --success: #00f2a1;
+            --pending: #ffcc00;
+            --gold: #ffd700;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #000; color: #fff; min-height: 100vh; display: flex; justify-content: center; overflow-x: hidden; }
+        
+        .bg-gradient {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(125deg, #000, #0a0a14, #1e1b4b, #000);
+            background-size: 300% 300%; z-index: -1; animation: aurora 12s ease infinite;
+        }
+        @keyframes aurora { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        .container { width: 100%; max-width: 450px; padding: 15px; z-index: 10; }
+        header h1 { text-align: center; font-size: 16px; margin: 15px 0; letter-spacing: 2px; text-transform: uppercase; color: #888; }
+
+        .meta-container { background: var(--glass); border: 1px solid var(--glass-border); padding: 15px; border-radius: 20px; margin-bottom: 15px; backdrop-filter: blur(10px); }
+        .meta-header { display: flex; justify-content: space-between; font-size: 12px; align-items: center; color: #aaa; }
+        .meta-value-input { background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: #fff; width: 60px; text-align: center; border-radius: 5px; font-weight: bold; }
+        .meta-bar { height: 6px; background: rgba(0,0,0,0.4); border-radius: 10px; margin-top: 10px; overflow: hidden; }
+        .meta-progress { height: 100%; background: var(--accent); width: 0%; transition: 0.5s ease; }
+        .meta-win { border: 2px solid var(--gold); box-shadow: 0 0 15px rgba(255,215,0,0.2); }
+
+        .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px; border: 1px solid var(--glass-border); background: var(--glass); color: #888; border-radius: 12px; font-weight: 600; cursor: pointer; }
+        .tab-btn.active { background: #fff; color: #000; border-color: #fff; }
+
+        .glass-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; padding: 15px; margin-bottom: 10px; backdrop-filter: blur(15px); }
+        .service-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .service-row:last-child { border: none; }
+        
+        .controls { display: flex; align-items: center; gap: 12px; }
+        .btn-round { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.1); color: #fff; font-size: 20px; cursor: pointer; }
+        .btn-round:active { background: var(--accent); transform: scale(0.9); }
+        .count-val { font-size: 18px; font-weight: bold; min-width: 25px; text-align: center; }
+
+        .summary { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--glass-border); }
+        .row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; color: #aaa; }
+        .total-row { font-size: 18px; font-weight: 700; color: var(--success); margin-top: 5px; }
+
+        .btn-action { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; margin-top: 8px; font-size: 14px; }
+        .btn-whatsapp { background: #25D366; color: #fff; }
+        .btn-pending { background: var(--pending); color: #000; }
+        .btn-clear { background: transparent; color: #444; font-size: 11px; margin-top: 15px; text-align: center; display: block; width: 100%; cursor: pointer; }
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+    </style>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="container">
+    <header><h1>CONTROLADOR DE COMISSÃO</h1></header>
+    
+    <div class="meta-container" id="meta-card">
+        <div class="meta-header">
+            <span>META DE GANHOS</span>
+            <span>META R$: <input type="number" id="meta-input" class="meta-value-input" value="200" oninput="atualizarResumos()"></span>
+        </div>
+        <div class="meta-bar"><div class="meta-progress" id="meta-progress"></div></div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="btn-com" onclick="switchTab('comissao')">PAGOS</button>
+        <button class="tab-btn" id="btn-pen" onclick="switchTab('pendentes')">FALTA RECEBER</button>
+    </div>
+
+    <div id="comissao" class="screen active">
+        <div class="glass-card" id="list-com"></div>
+        <div class="glass-card">
+            <div class="summary">
+                <div class="row"><span>Total Bruto</span><span id="t-bruto">R$ 0,00</span></div>
+                <div class="row"><span>Patrão</span><span id="t-patrao">R$ 0,00</span></div>
+                <div class="row total-row"><span>MEUS GANHOS</span><span id="t-barbeiro">R$ 0,00</span></div>
+            </div>
+        </div>
+        <button class="btn-action btn-whatsapp" onclick="enviarWhatsapp()">ENVIAR PARA O WHATSAPP</button>
+        <div class="btn-clear" onclick="reset('com')">LIMPAR TUDO</div>
+    </div>
+
+    <div id="pendentes" class="screen">
+        <div class="glass-card" id="list-pen"></div>
+        <div class="glass-card">
+            <div class="row"><span>Total a receber</span><span id="p-bruto">R$ 0,00</span></div>
+            <div class="row total-row" style="color:#fff"><span>Sua Parte</span><span id="p-comis">R$ 0,00</span></div>
+        </div>
+        <button class="btn-action btn-pending" onclick="receberTudo()">DAR BAIXA E RECEBER</button>
+        <div class="btn-clear" onclick="reset('pen')">LIMPAR FIADOS</div>
+    </div>
+</div>
+
+<script>
+    const precos = { social: 13, degrade: 15, navalha: 17, tesoura: 15, barba: 10, luzes: 30, pomada: 15 };
+    const nomes = { social: "Social", degrade: "Degradê", navalha: "Navalha", tesoura: "Tesoura", barba: "Barba", luzes: "Luzes", pomada: "Pomada" };
+    
+    // Memória super simples
+    let dados = JSON.parse(localStorage.getItem('kauan_dados')) || {
+        com: { social: 0, degrade: 0, navalha: 0, tesoura: 0, barba: 0, luzes: 0, pomada: 0 },
+        pen: { social: 0, degrade: 0, navalha: 0, tesoura: 0, barba: 0, luzes: 0, pomada: 0 }
+    };
+
+    function switchTab(t) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(t).classList.add('active');
+        document.getElementById(t === 'comissao' ? 'btn-com' : 'btn-pen').classList.add('active');
+    }
+
+    function render() {
+        ['com', 'pen'].forEach(tipo => {
+            const container = document.getElementById(`list-${tipo}`);
+            container.innerHTML = Object.keys(precos).map(k => `
+                <div class="service-row">
+                    <div><strong>${nomes[k]}</strong><br><small>R$ ${precos[k]},00</small></div>
+                    <div class="controls">
+                        <button class="btn-round" onclick="calc('${k}', -1, '${tipo}')">-</button>
+                        <span class="count-val">${dados[tipo][k]}</span>
+                        <button class="btn-round" onclick="calc('${k}', 1, '${tipo}')">+</button>
+                    </div>
+                </div>
+            `).join('');
+        });
+    }
+
+    function calc(k, v, tipo) {
+        dados[tipo][k] = Math.max(0, dados[tipo][k] + v);
+        render();
+        atualizarResumos();
+    }
+
+    function atualizarResumos() {
+        let b_c = 0, p_c = 0, barb_c = 0;
+        for (let k in dados.com) {
+            let qtd = dados.com[k];
+            b_c += qtd * precos[k];
+            if (k === 'pomada') { p_c += 15 * qtd; }
+            else if (k === 'barba') { p_c += 4 * qtd; barb_c += 6 * qtd; }
+            else if (k === 'luzes') { p_c += 14 * qtd; barb_c += 16 * qtd; }
+            else { 
+                let p_unit = (precos[k] - 1) / 2;
+                p_c += p_unit * qtd; barb_c += (p_unit + 1) * qtd;
+            }
+        }
+        document.getElementById('t-bruto').innerText = `R$ ${b_c.toFixed(2)}`;
+        document.getElementById('t-patrao').innerText = `R$ ${p_c.toFixed(2)}`;
+        document.getElementById('t-barbeiro').innerText = `R$ ${barb_c.toFixed(2)}`;
+
+        let m = parseFloat(document.getElementById('meta-input').value) || 1;
+        document.getElementById('meta-progress').style.width = Math.min((barb_c / m) * 100, 100) + "%";
+        document.getElementById('meta-card').classList.toggle('meta-win', barb_c >= m && barb_c > 0);
+
+        let b_p = 0, barb_p = 0;
+        for (let k in dados.pen) {
+            let qtd = dados.pen[k];
+            b_p += qtd * precos[k];
+            if (k === 'barba') barb_p += 6 * qtd;
+            else if (k === 'luzes') barb_p += 16 * qtd;
+            else if (k !== 'pomada') { barb_p += ((precos[k]-1)/2 + 1) * qtd; }
+        }
+        document.getElementById('p-bruto').innerText = `R$ ${b_p.toFixed(2)}`;
+        document.getElementById('p-comis').innerText = `R$ ${barb_p.toFixed(2)}`;
+        
+        localStorage.setItem('kauan_dados', JSON.stringify(dados));
+    }
+
+    function enviarWhatsapp() {
+        let txt = `*RESUMO KAUAN*%0ABruto: ${document.getElementById('t-bruto').innerText}%0AMinha Parte: ${document.getElementById('t-barbeiro').innerText}`;
+        window.open(`https://wa.me/?text=${txt}`);
+    }
+
+    function receberTudo() {
+        for (let k in dados.pen) { dados.com[k] += dados.pen[k]; dados.pen[k] = 0; }
+        render(); atualizarResumos(); switchTab('comissao');
+    }
+
+    function reset(t) {
+        if(confirm("Zerar?")) {
+            for(let k in dados[t]) dados[t][k] = 0;
+            render(); atualizarResumos();
+        }
+    }
+
+    render();
+    atualizarResumos();
+</script>
+</body>
+</html>
